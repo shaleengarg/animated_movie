@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>My</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style>
+body {
+    color: #61443e;
+    font-family:Monospace;
+    font-size:13px;
+    text-align:center;
+
+    background-color: #bfd1e5;
+    margin: 0px;
+    overflow: hidden;
+}
+
+#info {
+    position: absolute;
+    top: 0px; width: 100%;
+    padding: 5px;
+}
+
+a {
+
+    color: #a06851;
+}
+
+#oldie {
+    background:rgb(100,0,0) !important;
+    color:#fff !important;
+    margin-top:10em !important;
+}
+#oldie a { color:#fff }
+
+</style>
+</head>
+<body>
+<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
+<script src="js/three.min.js"></script>
+
+<script src="js/FirstPersonControls.js"></script>
+
+<script src="js/ImprovedNoise.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/stats.min.js"></script>
+
+<script>
+
+if ( ! Detector.webgl ) {
+
+    Detector.addGetWebGLMessage();
+    document.getElementById( 'container' ).innerHTML = "";
+
+}
+var container, stats;
+
+var camera, controls, scene, renderer;
+
+var mesh;
+
+var worldWidth = 128, worldDepth = 128,
+    worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2,
+
+//console.log(data);
+
+clock = new THREE.Clock();
+
+init();
+animate();
+
+function init()
+{
+
+    container = document.getElementById( 'container' );
+
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
+    camera.position.y = 130;
+    camera.position.x = 71;
+    camera.position.z = 500;
+    //console.log(camera.position.x, camera.position.y, camera.position.z);
+    controls = new THREE.FirstPersonControls( camera );
+
+    controls.movementSpeed = 900;
+    controls.lookSpeed = 0.125;
+    controls.lookVertical = true;
+
+    scene = new THREE.Scene();
+    var geometry = new THREE.CubeGeometry( 100, 200, 7);
+        var materials = [];
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_side.jpg")})); // right face
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_side.jpg")})); // left face
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_side.jpg")})); // top face
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_side.jpg")})); // bottom face
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_front.jpg")})); // front face
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/s5_back.jpg")})); // back face
+        
+        // var material = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture("images/atlas.png")});
+        var material = new THREE.MeshFaceMaterial(materials);
+        s5 = new THREE.Mesh(geometry, material );
+        s5.position.z = 0;
+        s5.position.x = 0;
+        s5.position.y = 0;
+        s5.castShadow = true;
+        s5.name = "s5";
+        scene.add(s5);
+
+        var geometry = new THREE.CubeGeometry( 100, 200, 7);
+        var materials = [];
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_side.jpg")})); // rightface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_side.jpg")})); // leftface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_side.jpg")})); // topface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_side.jpg")})); // bottomface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_front.jpg")})); // frontface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/htc_back.jpg")})); // backface
+        
+        // var material = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture("images/atlas.png")});
+        var material = new THREE.MeshFaceMaterial(materials);
+        htc = new THREE.Mesh(geometry, material );
+        htc.position.z = 0;
+        htc.position.x = 150;
+        htc.position.y = 0;
+        htc.castShadow = true;
+        htc.name = "s5";
+        scene.add(htc);
+
+
+        var geometry = new THREE.CubeGeometry( 100, 200, 7);
+        var materials = [];
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_side.jpg")})); // rightface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_side.jpg")})); // leftface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_side.jpg")})); // topface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_side.jpg")})); // bottomface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_front.jpg")})); // frontface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/lumia_back.jpg")})); // backface
+        
+        // var material = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture("images/atlas.png")});
+        var material = new THREE.MeshFaceMaterial(materials);
+        lumia = new THREE.Mesh(geometry, material );
+        lumia.position.z = 0;
+        lumia.position.x = 300;
+        lumia.position.y = 0;
+        lumia.castShadow = true;
+        lumia.name = "lumia";
+        scene.add(lumia);
+
+
+        var geometry = new THREE.CubeGeometry( 100, 200, 7);
+        var materials = [];
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_side.jpg")})); // rightface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_side.jpg")})); // leftface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_side.jpg")})); // topface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_side.jpg")})); // bottomface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_front.jpg")})); // frontface
+        materials.push(new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture("images/iphone_back.jpg")})); // backface
+        
+        // var material = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture("images/atlas.png")});
+        var material = new THREE.MeshFaceMaterial(materials);
+        iphone = new THREE.Mesh(geometry, material );
+        iphone.position.z = 0;
+        iphone.position.x = 450;
+        iphone.position.y = 0;
+        iphone.castShadow = true;
+        iphone.name = "iphone";
+        scene.add(iphone);
+
+
+        camera.lookAt.x = s5.position.x;
+        camera.lookAt.y = s5.position.y;
+        camera.lookAt.z = s5.position.z;
+
+    var ambientLight = new THREE.AmbientLight( 0xcccccc );
+    scene.add( ambientLight );
+
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+    directionalLight.position.set( 1, 1, 0.5 ).normalize();
+    scene.add( directionalLight );
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor( 0xbfd1e5 );
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+    container.innerHTML = "";
+
+    container.appendChild( renderer.domElement );
+
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.top = '0px';
+    container.appendChild( stats.domElement );
+
+    //
+
+    window.addEventListener( 'resize', onWindowResize, false );
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    render();
+    stats.update();
+
+}
+
+function render() {
+
+    controls.update( clock.getDelta() );
+    renderer.render( scene, camera );
+    console.log(camera.position.x, camera.position.y, camera.position.z);
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+    controls.handleResize();
+
+}
+</script>
+
+</body>
+</html>

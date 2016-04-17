@@ -67,7 +67,7 @@ var mesh;
 var worldWidth = 128, worldDepth = 128,
     worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2,
     data = generateHeight( worldWidth, worldDepth );
-
+//console.log(data);
 var clock = new THREE.Clock();
 
 init();
@@ -82,7 +82,7 @@ function init() {
 
     controls = new THREE.FirstPersonControls( camera );
 
-    controls.movementSpeed = 1000;
+    controls.movementSpeed = 900;
     controls.lookSpeed = 0.125;
     controls.lookVertical = true;
 
@@ -102,7 +102,7 @@ function init() {
     nxGeometry.attributes.uv.array[ 1 ] = 0.5;
     nxGeometry.attributes.uv.array[ 3 ] = 0.5;
     nxGeometry.rotateY( - Math.PI / 2 );
-    nxGeometry.translate( - 50, 0, 0 );
+    nxGeometry.translate( -50, 0, 0 );
 
     var pyGeometry = new THREE.PlaneBufferGeometry( 100, 100 );
     pyGeometry.attributes.uv.array[ 5 ] = 0.5;

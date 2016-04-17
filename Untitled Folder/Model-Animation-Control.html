@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Model Animation with Movement Controls (Three.js)</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+<script src="js/FirstPersonControls.js"></script>
+
+<script src="js/DDSLoader.js"></script>
+<script src="js/MTLLoader.js"></script>
+<script src="js/OBJLoader.js"></script>
+<!-- Simplfied gamepad interaction (Chrome 22 patched) -->
+<!-- <script src="js/gamepad.js"></script> -->
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Controls:
+<ul>
+<li>Up arrow: forwards
+<li>Down arrow: backwards
+<li>Left arrow: turn left
+<li>Right arrow: turn right
+</ul>
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+var moveDistance = 5;
+var delta = 0.15;
+var floor;
+// custom global variables
+var android;
+
+// the following code is from
+//    http://catchvar.com/threejs-animating-blender-models
+var animOffset       = 0,   // starting frame of animation
+	walking         = false,
+	duration        = 1000, // milliseconds to complete animation
+	keyframes       = 20,   // total number of animation frames
+	interpolation   = duration / keyframes, // milliseconds per frame
+	lastKeyframe    = 0,    // previous keyframe
+	currentKeyframe = 0;
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+ 
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 400000000 );
+    camera.position.y = 100000;
+    camera.position.x = 0;
+    camera.position.z = 0;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+				//camera.up.set(0, 0, 1);
+
+    //console.log(camera.position.x, camera.position.y, camera.position.z);
+    controls = new THREE.FirstPersonControls( camera );
+
+    controls.movementSpeed = 100000;
+    controls.lookSpeed = 0.125;
+    controls.lookVertical = true;
+	//console.log(controls);
+    scene = new THREE.Scene();
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	//THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	//controls = new THREE.OrbitControls( camera, renderer.domElement );
+	// STATS
+
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	
+	// LIGHT
+	/*var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,0,0);
+	scene.add(light);*/
+	
+	/*var spotLight = new THREE.SpotLight( 0xffffff );
+	spotLight.position.set( 0, 0, 0 );
+	spotLight.distance = 1000000;
+	//spotLight.target = (0,-380000,0);
+	scene.add( spotLight );
+*/
+	//AXIS
+		var axis_length = 10000000;
+		var x_axis_material = new THREE.LineBasicMaterial({color: 0xff0000});
+        var x_axis_geometry = new THREE.Geometry();
+        x_axis_geometry.vertices.push(new THREE.Vector3(-axis_length, 0, 0));
+        x_axis_geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+        x_axis_geometry.vertices.push(new THREE.Vector3(axis_length, 0, 0));
+        var x_axis = new THREE.Line(x_axis_geometry, x_axis_material);
+        scene.add(x_axis);
+
+        var y_axis_material = new THREE.LineBasicMaterial({color: 0x00ff00});
+        var y_axis_geometry = new THREE.Geometry();
+        y_axis_geometry.vertices.push(new THREE.Vector3(0, -axis_length, 0));
+        y_axis_geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+        y_axis_geometry.vertices.push(new THREE.Vector3(0, axis_length, 0));
+        var y_axis = new THREE.Line(y_axis_geometry, y_axis_material);
+        scene.add(y_axis);
+
+
+        var z_axis_material = new THREE.LineBasicMaterial({color: 0x0000ff});
+        var z_axis_geometry = new THREE.Geometry();
+        z_axis_geometry.vertices.push(new THREE.Vector3(0, 0, -axis_length));
+        z_axis_geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+        z_axis_geometry.vertices.push(new THREE.Vector3(0, 0, axis_length));
+        var z_axis = new THREE.Line(z_axis_geometry, z_axis_material);
+        scene.add(z_axis);
+
+
+
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(60000, 100000, 10, 10);
+	floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -38000;
+	floor.rotation.x = Math.PI / 2;
+	floor.rotation.z = 70 *Math.PI/180.0;
+	scene.add(floor);
+
+	///Stadium start
+	var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+
+				var onError = function ( xhr ) { };
+
+				THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+
+				var mtlLoader = new THREE.MTLLoader();
+				/*mtlLoader.setBaseUrl( 'obj/male02/' );
+				mtlLoader.setPath( 'obj/male02/' );*/
+				mtlLoader.load( 'models/Stadiums.mtl', function( materials ) {
+
+					materials.preload();
+
+					var objLoader = new THREE.OBJLoader();
+					objLoader.setMaterials( materials );
+					//objLoader.setPath( 'obj/male02/' );
+					objLoader.load( 'models/Stadiums.obj', function ( object ) {
+
+						/*object.position.y = - 95;*/
+						object.rotation.x = 80;
+						
+						object.position.x = 100000;
+						object.position.y = 0;
+						object.position.z = 100000;
+						scene.add( object );
+
+					}, onProgress, onError );
+
+				});
+
+// Stadium end
+
+
+	// // SKYBOX/FOG
+	// var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	// var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	// var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	// // scene.add(skyBox);
+	// scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var jsonLoader = new THREE.JSONLoader();
+	jsonLoader.load( "models/android-animations.js", addModelToScene );
+	// addModelToScene function is called back after model has loaded
+	
+	var ambientLight = new THREE.AmbientLight(0x111111);
+	ambientLight.intensity = 7;
+	scene.add(ambientLight);
+
+	document.addEventListener('keydown', function(e){
+            var keycode = e.keyCode;
+            /*console.log(keycode);*/
+            if ( keycode == 83) //S
+			{
+				//console.log("here");
+				android.translateZ( -moveDistance );
+				walking = true;
+			}
+			if ( keycode == 87 )//W
+			{
+				android.translateZ(  moveDistance );
+				walking = true;
+			}
+			// rotate left/right
+			if ( keycode == 65 ) //A
+			{
+				android.rotation.y += delta;
+				walking = true;
+				
+			}
+			if ( keycode == 68 ) //D
+			{
+				android.rotation.y -= delta;
+				walking = true;
+			}
+			if (keycode == 56)
+			{
+				floor.position.x += 100;
+			}
+			if (keycode == 57)
+			{
+				floor.position.z += 100;
+			}
+			if (keycode == 54)
+			{
+				floor.position.x -= 100;
+			}
+			if (keycode == 55)
+			{
+				floor.position.z -= 100;
+			}
+			//walking = false;
+	}
+)}
+
+function addModelToScene( geometry, materials ) 
+{
+	// for preparing animation
+	for (var i = 0; i < materials.length; i++)
+		materials[i].morphTargets = true;
+		
+	var material = new THREE.MeshFaceMaterial( materials );
+	android = new THREE.Mesh( geometry, material );
+	android.scale.set(10,10,10);
+	scene.add( android );
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	//update();
+	stats.update();
+}
+
+// /*function update()
+// {
+// 	// delta = change in time since last call (seconds)
+// 	delta = clock.getDelta(); 
+// 	moveDistance = 100 * delta;
+// 	walking = false;
+// 	console.log("support_update");
+	
+// 	/*if (Gamepad.supported) 
+// 	{
+// 		console.log("support");
+// 		var pads = Gamepad.getStates();
+//         var pad = pads[0]; // assume only 1 player.
+//         if (pad) 
+// 		{*/
+// 			console.log("there");	
+// 			// adjust for deadzone.
+// 			if (Math.abs(pad.leftStickX + pad.rightStickX) > 0.3)
+// 			{
+// 				android.rotation.y -= delta * (pad.leftStickX + pad.rightStickX);
+// 				walking = true;
+// 			}
+// 			if (Math.abs(pad.leftStickY + pad.rightStickY) > 0.2)
+// 			{
+// 				android.translateZ( -moveDistance * (pad.leftStickY + pad.rightStickY) );
+// 				walking = true;
+// 			}
+// 			/*if ( pad.faceButton0 || pad.faceButton1 || pad.faceButton2 || pad.faceButton3 || pad.select || pad.start )
+// 			{ 
+// 			    android.position.set(0,0,0);
+// 				android.rotation.set(0,0,0);
+// 			}
+// 			*/
+//         /*}*/
+// 	/*}*/
+// 	//controls.update();
+// 	stats.update();
+// }*/
+
+
+function render() 
+{
+	if ( android && walking ) // exists / is loaded 
+	{
+		// Alternate morph targets
+		time = new Date().getTime() % duration;
+		keyframe = Math.floor( time / interpolation ) + animOffset;
+		if ( keyframe != currentKeyframe ) 
+		{
+			android.morphTargetInfluences[ lastKeyframe ] = 0;
+			android.morphTargetInfluences[ currentKeyframe ] = 1;
+			android.morphTargetInfluences[ keyframe ] = 0;
+			lastKeyframe = currentKeyframe;
+			currentKeyframe = keyframe;
+		}
+		android.morphTargetInfluences[ keyframe ] = 
+			( time % interpolation ) / interpolation;
+		android.morphTargetInfluences[ lastKeyframe ] = 
+			1 - android.morphTargetInfluences[ keyframe ];
+		walking = false;
+
+	}
+	/*floor.rotation.z += 0.01 ;
+	floor.rotation.z %= 2*Math.PI;
+	console.log(floor.rotation.z*180/Math.PI);*/
+	controls.update( clock.getDelta() );
+	console.log(floor.position.x, floor.position.z);
+	//console.log(camera.position.x, camera.position.y, camera.position.z);
+	renderer.render( scene, camera );
+}
+</script>
+
+</body>
+</html>
